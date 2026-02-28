@@ -1,0 +1,15 @@
+A. Average Latency Measurements: 
+
+US Instance: /register: 90.38ms, /list: 85.19ms
+
+EU Instance: /register: 446.53ms, /list: 344.47ms
+
+B. Eventual Consistency Results: 
+
+Total Synchronization Misses: 0 out of 100.
+
+C. Discussion: 
+
+The latencies differ significantly because of the geographic distance between the client and the servers. Since I am accessing the services from Illinois, the connection to the us-central1 instance (Iowa) is much shorter and faster than the connection to the europe-west1 instance (Belgium). The network packets must travel across the Atlantic Ocean to reach Europe, which introduces unavoidable physical propagation delay.
+
+My consistency experimentshowed 0 misses, which indicates that Google Cloud Firestore's replication speed is extremely high. Even though NoSQL systems offer "eventual consistency", the time it takes for my script to initiate a second request from the local machine is apparently longer than the time Firestore needs to sync data across regions. This proves that for most standard user interactions, the "lag" is nearly imperceptible.

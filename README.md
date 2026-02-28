@@ -1,1 +1,0 @@
-# cs_498_data_management_in_cloud
