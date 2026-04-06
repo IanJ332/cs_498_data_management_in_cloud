@@ -1,3 +1,1 @@
-| Student name  | NetID |
-| ------------- |:-------------:|
-| Ian Jiang      | jisheng3     |
+jisheng3
