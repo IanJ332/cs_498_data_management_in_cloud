@@ -1,39 +1,34 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, Body
 from pymongo import MongoClient, WriteConcern, ReadPreference
-import json
+import certifi
 
-app = Flask(__name__)
+app = FastAPI()
 
-MONGO_URI = "mongodb+srv://lab6user:password@cluster0.s42bhpa.mongodb.net/?appName=Cluster0"
-client = MongoClient(MONGO_URI)
+MONGO_URI = "mongodb+srv://lab6user:PASSWORDS@cluster0.s42bhpa.mongodb.net/?appName=Cluster0"
+client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
 db = client['ev_db']
 collection = db['vehicles']
 
-@app.route('/insert-fast', methods=['POST'])
-def insert_fast():
-    record = request.json
+@app.post("/insert-fast")
+def insert_fast(record: dict = Body(...)):
     coll_fast = collection.with_options(write_concern=WriteConcern(w=1))
     result = coll_fast.insert_one(record)
-    return str(result.inserted_id), 201
+    return {"id": str(result.inserted_id)}
 
-@app.route('/insert-safe', methods=['POST'])
-def insert_safe():
-    record = request.json
+@app.post("/insert-safe")
+def insert_safe(record: dict = Body(...)):
     coll_safe = collection.with_options(write_concern=WriteConcern(w='majority'))
     result = coll_safe.insert_one(record)
-    return str(result.inserted_id), 201
+    return {"id": str(result.inserted_id)}
 
-@app.route('/count-tesla-primary', methods=['GET'])
+@app.get("/count-tesla-primary")
 def count_tesla():
     coll_primary = collection.with_options(read_preference=ReadPreference.PRIMARY)
     count = coll_primary.count_documents({"Make": "TESLA"})
-    return jsonify({"count": count})
+    return {"count": count}
 
-@app.route('/count-bmw-secondary', methods=['GET'])
+@app.get("/count-bmw-secondary")
 def count_bmw():
     coll_secondary = collection.with_options(read_preference=ReadPreference.SECONDARY_PREFERRED)
     count = coll_secondary.count_documents({"Make": "BMW"})
-    return jsonify({"count": count})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    return {"count": count}
