@@ -4,7 +4,7 @@ import json
 
 app = Flask(__name__)
 
-MONGO_URI = "mongodb+srv://lab6user:030302@cluster0.s42bhpa.mongodb.net/?appName=Cluster0"
+MONGO_URI = "mongodb+srv://lab6user:password@cluster0.s42bhpa.mongodb.net/?appName=Cluster0"
 client = MongoClient(MONGO_URI)
 db = client['ev_db']
 collection = db['vehicles']

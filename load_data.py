@@ -1,9 +1,9 @@
 import pandas as pd
 from pymongo import MongoClient
 
-MONGO_URI = "mongodb+srv://lab6user:030302@cluster0.s42bhpa.mongodb.net/?appName=Cluster0"
-DB_NAME = "ev_db"      # 
-COLLECTION_NAME = "vehicles" # 
+MONGO_URI = "mongodb+srv://lab6user:password@cluster0.s42bhpa.mongodb.net/?appName=Cluster0"
+DB_NAME = "ev_db"
+COLLECTION_NAME = "vehicles"
 
 def main():
     client = MongoClient(MONGO_URI)
