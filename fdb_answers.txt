@@ -1,0 +1,25 @@
+### **Q1 — Architecture Decoupling**
+* **Reason for Decoupling:**
+    FDB decouples the Transaction Management System (TMS) from the Storage System (SS) to achieve **independent scalability** and **fault isolation**. This "unbundled" architecture allows the system to scale transaction processing resources (TMS) and storage capacity (SS) separately based on demand. It also simplifies the recovery process by ensuring that transaction state transitions do not depend on the immediate availability of specific storage nodes.
+* **Layer Responsibilities:**
+    * **TMS (Transaction Management System):** Handles transaction ordering, conflict detection, and durability. It includes the Sequencer, Proxies, Resolvers, and LogServers.
+    * **SS (Storage System):** Handles data persistence, indexing, and serving read requests from clients. It consists of multiple distributed StorageServers.
+
+### **Q2 — Conflict Detection**
+* **Responsible Component:** **Resolvers**.
+* **Commit Process Timing:** Conflict detection occurs during the **commit phase**. When a Proxy receives a commit request, it sends the transaction’s read set and write set to the Resolvers. The Resolvers check if any keys in the read set have been modified by other transactions that committed after the current transaction's read version was assigned.
+
+### **Q3 — Read Version and Consistency**
+* **Purpose:** The read version defines the **point-in-time snapshot** of the database that the transaction will see. It ensures that all reads within that transaction are consistent with a specific committed state of the database.
+* **Consistency Relation:** The read version is fundamental to FDB's **External Consistency (Serializability)**. By assigning a globally monotonic read version, FDB guarantees that a transaction observes a consistent, immutable view of the database, providing a foundation for Snapshot Isolation and Strict Serializability.
+
+### **Q4 — Snapshot Reads vs. Standard Reads**
+* **Differences in Conflict Detection:** * **Standard Reads:** Are added to the transaction’s "read set." If the data read by the transaction is modified by another committed transaction before the current one commits, a conflict is triggered, and the transaction is aborted.
+    * **Snapshot Reads:** Are **not** added to the read set. They do not trigger conflicts, meaning the transaction can commit even if the data it read was changed by a concurrent transaction.
+* **Choosing Between Them:** * Use **Standard Reads** for operations requiring strict ACID properties where you must ensure data hasn't changed between the read and the write (e.g., a bank balance check before a transfer).
+    * Use **Snapshot Reads** for read-only analytical queries, report generation, or scenarios where reducing the transaction abort rate is more important than absolute serializability.
+
+### **Q5 — "Cheap" Recovery**
+* **Why it is Possible:** FDB recovery is "cheap" because it does not require replaying a traditional redo log on the critical path to restore the StorageServers to a consistent state.
+* **Interaction Mechanism:** During normal operation, **StorageServers** continuously pull and apply log updates from the **LogServers** asynchronously. 
+* **Recovery Process:** When a failure occurs, the new Transaction System only needs to determine the last committed version and terminate the previous generation of LogServers. Since StorageServers maintain their own state and can continue catching up in the background, the system becomes available for new transactions almost immediately (typically under 1 second).
